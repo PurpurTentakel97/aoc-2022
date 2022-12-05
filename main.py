@@ -31,6 +31,7 @@ if __name__ == "__main__":
                 d.d_03.d_03_main()
             case 4:
                 print("\nday:" + str(day) + "\n")
+                d.d_04.d_04_main()
             case 5:
                 print("\nday:" + str(day) + "\n")
             case 6:
