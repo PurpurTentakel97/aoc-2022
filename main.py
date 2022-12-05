@@ -7,9 +7,9 @@ import day_imports as d
 
 if __name__ == "__main__":
     while True:
-        raw_input: str = input("enter the day\ntype \"quit\" for closing\n")
+        raw_input: str = input("enter the day\ntype \"q\" for closing\n")
 
-        if raw_input == "quit":
+        if raw_input == "q":
             break
 
         day: int
