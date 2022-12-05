@@ -36,12 +36,22 @@ def parse_moves(introduction: str) -> list[int, int, int]:
     return [int(count), int(from_) - 1, int(to_) - 1]
 
 
-def move_crates(crate_list: list[list[str]], introduction: str) -> list[list[str]]:
+def move_crates1(crate_list: list[list[str]], introduction: str) -> list[list[str]]:
     introduction: list[int, int, int] = parse_moves(introduction)
 
     for i in range(introduction[0]):
         temporary = crate_list[introduction[1]].pop()
         crate_list[introduction[2]].append(temporary)
+
+    return crate_list
+
+
+def move_crates2(crate_list: list[list[str]], introduction: str) -> list[list[str]]:
+    introduction: list[int, int, int] = parse_moves(introduction)
+
+    temporary = crate_list[introduction[1]][-introduction[0]:]
+    del crate_list[introduction[1]][-introduction[0]:]
+    crate_list[introduction[2]] += temporary
 
     return crate_list
 
@@ -55,17 +65,23 @@ def get_result(crate_list: list[list[str]]) -> str:
 
 
 def d_05_main() -> None:
-    crate_list: list[list[str]]
-    with open("day_05/input_05_1.txt", "r") as file:
+    crate_list1: list[list[str]]
+    crate_list2: list[list[str]]
+    with open("day_05/input_05_2.txt", "r") as file:
         lines: list[str, ...] = file.readlines()
         split_index: int = get_split_index(lines)
 
-        crate_list = get_crates(split_index, lines)
+        crate_list1 = get_crates(split_index, lines)
+        crate_list2 = get_crates(split_index, lines)
 
         for i, line in enumerate(lines):
             if i <= split_index:
                 continue
-            crate_list = move_crates(crate_list, line)
+            crate_list1 = move_crates1(crate_list1, line)
+            crate_list2 = move_crates2(crate_list2, line)
 
-        result: str = get_result(crate_list)
-        print("the result is: " + result)
+        result1: str = get_result(crate_list1)
+        print("the result1 is: " + result1)
+
+        result2: str = get_result(crate_list2)
+        print("the result2 is: " + result2)
