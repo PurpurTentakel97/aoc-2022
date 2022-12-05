@@ -30,7 +30,7 @@ def get_enum_from_string(value: str) -> TicTacToeType:
 
 
 def d_02_main() -> None:
-    with open("day_02/real_input_02.txt", "r") as file:
+    with open("day_02/input_02_1.txt", "r") as file:
         score: int = 0
         for line in file:
             if len(line) == 0:

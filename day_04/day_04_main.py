@@ -4,7 +4,7 @@
 #
 
 def d_04_main() -> None:
-    with open("day_04/real_input_04.txt") as file:
+    with open("day_04/input_04_1.txt") as file:
         counter: int = 0
         for line in file:
 

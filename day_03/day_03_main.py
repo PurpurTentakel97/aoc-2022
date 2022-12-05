@@ -4,7 +4,7 @@
 #
 
 def d_03_main() -> None:
-    with open("day_03/real_input_03.txt", "r") as file:
+    with open("day_03/input_03_1.txt", "r") as file:
         score: int = 0
         for line in file:
             first_part, second_part = line[:len(line) // 2], line[len(line) // 2:]

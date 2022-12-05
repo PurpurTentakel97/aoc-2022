@@ -56,7 +56,7 @@ def get_result(crate_list: list[list[str]]) -> str:
 
 def d_05_main() -> None:
     crate_list: list[list[str]]
-    with open("day_05/real_input_05.txt", "r") as file:
+    with open("day_05/input_05_1.txt", "r") as file:
         lines: list[str, ...] = file.readlines()
         split_index: int = get_split_index(lines)
 
