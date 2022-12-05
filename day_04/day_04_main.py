@@ -4,8 +4,9 @@
 #
 
 def d_04_main() -> None:
-    with open("day_04/input_04_1.txt") as file:
-        counter: int = 0
+    with open("day_04/input_04_2.txt") as file:
+        counter1: int = 0
+        counter2: int = 0
         for line in file:
 
             lhs, rhs = line.split(",")
@@ -17,6 +18,11 @@ def d_04_main() -> None:
             rhs = set(range(rhs[0], rhs[1] + 1))
 
             if lhs.issubset(rhs) or rhs.issubset(lhs):
-                counter += 1
+                counter1 += 1
 
-        print("counter is: " + str(counter))
+            intersection = lhs.intersection(rhs)
+            if len(intersection) > 0:
+                counter2 += 1
+
+        print("counter1 is: " + str(counter1))
+        print("counter2 is: " + str(counter2))
