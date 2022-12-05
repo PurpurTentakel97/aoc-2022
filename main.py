@@ -3,7 +3,7 @@
 # 05.12.2022
 #
 
-import day_imports as d_i
+import day_imports as d
 
 if __name__ == "__main__":
     while True:
@@ -22,12 +22,13 @@ if __name__ == "__main__":
         match day:
             case 1:
                 print("\nday:" + str(day) + "\n")
-                d_i.d_01.d_01_main()
+                d.d_01.d_01_main()
             case 2:
                 print("\nday:" + str(day) + "\n")
-                d_i.d_02.d_02_main()
+                d.d_02.d_02_main()
             case 3:
                 print("\nday:" + str(day) + "\n")
+                d.d_03.d_03_main()
             case 4:
                 print("\nday:" + str(day) + "\n")
             case 5:
