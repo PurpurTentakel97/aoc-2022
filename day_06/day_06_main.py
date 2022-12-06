@@ -20,9 +20,14 @@ def get_count_for_chars_repeating(line: str, value: int) -> int:
 
 
 def d_06_main() -> None:
-    with open("day_06/input_06_1.txt", "r") as file:
+    with open("day_06/input_06_2.txt", "r") as file:
         lines: list[str, ...] = file.readlines()
 
         for line in lines:
             result1: int = get_count_for_chars_repeating(line, 4)
             print("result: " + str(result1))
+
+            result2: int = get_count_for_chars_repeating(line, 14)
+            print("result: " + str(result2))
+
+            print("---")
