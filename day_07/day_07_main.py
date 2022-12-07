@@ -84,17 +84,24 @@ def parse_entries(lines: list[str, ...]) -> Directory:
     return dirs
 
 
-def get_directories_smaller_than(directory: Directory, upper_border: int) -> list[Directory, ...]:
-    dirs: list[Directory, ...] = list()
+def get_directories_smaller_than(directory: Directory, upper_border: int, lower_border) -> list[
+    list[Directory, ...], list[Directory, ...]]:
+    upper_dirs: list[Directory, ...] = list()
+    lower_dirs: list[Directory, ...] = list()
 
     size: int = directory.count_size()
     if size <= upper_border:
-        dirs.append(directory)
+        upper_dirs.append(directory)
+
+    if size >= lower_border:
+        lower_dirs.append(directory)
 
     for dir in directory.get_directories():
-        dirs.extend(get_directories_smaller_than(dir, upper_border))
+        low, up = get_directories_smaller_than(dir, upper_border, lower_border)
+        lower_dirs.extend(low)
+        upper_dirs.extend(up)
 
-    return dirs
+    return [lower_dirs, upper_dirs]
 
 
 def get_dir_count(dirs: list[Directory, ...]) -> int:
@@ -106,12 +113,34 @@ def get_dir_count(dirs: list[Directory, ...]) -> int:
     return count
 
 
+def get_lowest_dir(dirs: list[Directory, ...]) -> Directory:
+    current_directory: Directory | None = None
+
+    for dir in dirs:
+        if not current_directory:
+            current_directory = dir
+            continue
+
+        if current_directory.count_size() > dir.count_size():
+            current_directory = dir
+
+    return current_directory
+
+
 def d_07_main() -> None:
-    with open("day_07/input_07_1.txt", "r") as f:
+    size_filesystem: int = 70000000
+    size_update: int = 30000000
+
+    with open("day_07/input_07_2.txt", "r") as f:
         lines = f.readlines()
 
         dirs: Directory = parse_entries(lines)
 
-        small_dirs: list[Directory, ...] = get_directories_smaller_than(dirs, 100000)
+        # 1
+        total_used_size: int = dirs.count_size()
+        needed_size: int = size_update - (size_filesystem - total_used_size)
 
-        print(get_dir_count(small_dirs))
+        large_dirs, small_dirs = get_directories_smaller_than(dirs, 100000, needed_size)
+        print("small directory count: " + str(get_dir_count(small_dirs)))
+        directory_to_delete: Directory = get_lowest_dir(large_dirs)
+        print("smallest directory to delete: " + str(directory_to_delete.count_size()))
