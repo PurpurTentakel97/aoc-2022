@@ -139,45 +139,70 @@ def get_seen_trees_count(trees) -> int:
 
 # 2
 def get_scenic_score_from_specific_tree_to_left(trees: list[list[Tree, ...], ...], l_i, r_i) -> int:
-    current_value = 0
+    current_value = trees[l_i][r_i].get_height()
+    count = 0
 
-    for i in range(r_i, 0, -1):
-        if i == r_i:
-            current_value = trees[l_i][i].get_height()
-            continue
+    for i in range(r_i - 1, -1, -1):
 
         if current_value > trees[l_i][i].get_height():
+            count += 1
+        elif current_value <= trees[l_i][i].get_height():
+            count += 1
             break
-        if current_value == trees[l_i][i].get_height():
-            current_value += 1
-            break
-        current_value += 1
 
-    return current_value
+    return count
 
 
 def get_scenic_score_from_specific_tree_to_right(trees: list[list[Tree, ...], ...], l_i, r_i) -> int:
-    current_value = 0
+    current_value = trees[l_i][r_i].get_height()
+    count = 0
 
-    for i in range(r_i, len(trees[l_i])-1):
-        if i == r_i:
-            current_value = trees[l_i][i].get_height()
-            continue
+    for i in range(r_i + 1, len(trees[l_i])):
 
         if current_value > trees[l_i][i].get_height():
+            count += 1
+        elif current_value <= trees[l_i][i].get_height():
+            count += 1
             break
-        if current_value == trees[l_i][i].get_height():
-            current_value += 1
-            break
-        current_value += 1
 
-    return current_value
+    return count
+
+
+def get_scenic_score_from_specific_tree_to_top(trees: list[list[Tree, ...], ...], l_i, r_i) -> int:
+    current_value = trees[l_i][r_i].get_height()
+    count = 0
+
+    for i in range(l_i - 1, -1, -1):
+
+        if current_value > trees[i][r_i].get_height():
+            count += 1
+        elif current_value <= trees[i][r_i].get_height():
+            count += 1
+            break
+
+    return count
+
+def get_scenic_score_from_specific_tree_to_buttom(trees: list[list[Tree, ...], ...], l_i, r_i) -> int:
+    current_value = trees[l_i][r_i].get_height()
+    count = 0
+
+    for i in range(l_i + 1, len(trees)):
+
+        if current_value > trees[i][r_i].get_height():
+            count += 1
+        elif current_value <= trees[i][r_i].get_height():
+            count += 1
+            break
+
+    return count
 
 
 def get_scenic_score_from_specific_tree(trees: list[list[Tree, ...], ...], l_i, r_i) -> int:
     scores = list()
     scores.append(get_scenic_score_from_specific_tree_to_left(trees[:], l_i, r_i))
     scores.append(get_scenic_score_from_specific_tree_to_right(trees[:], l_i, r_i))
+    scores.append(get_scenic_score_from_specific_tree_to_top(trees[:], l_i, r_i))
+    scores.append(get_scenic_score_from_specific_tree_to_buttom(trees[:], l_i, r_i))
 
     score = scores[0]
     for i in range(1, len(scores)):
@@ -195,14 +220,14 @@ def get_higest_scenic_score(trees) -> int:
 
     current_value = 0
     for score in scores:
-        if current_value > score:
+        if current_value < score:
             current_value = score
 
     return current_value
 
 
 def d_08_main() -> None:
-    with open("day_08/raw_input_08.txt", "r") as file:
+    with open("day_08/input_08_2.txt", "r") as file:
         lines = file.readlines()
 
         trees = parse_input(lines)
@@ -212,5 +237,5 @@ def d_08_main() -> None:
         print(f"trees that are be seen are: {count}")
 
         # 2
-        count = get_scenic_score_from_specific_tree(trees[:], 4, 3)
+        count = get_higest_scenic_score(trees[:])
         print(f"heighest scenic score is: {count}")
