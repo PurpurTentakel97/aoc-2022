@@ -15,6 +15,7 @@ class Direction(Enum):
     DOWN_LEFT = "DL"
     LEFT = "L"
     UP_LEFT = "UL"
+    NONE = "N"
 
 
 class Position:
@@ -22,8 +23,64 @@ class Position:
         self.x = x
         self.y = y
 
+    def subtract(self, other: "Position") -> "Position":
+        return Position(self.x - other.x, self.y - other.y)
+
     def equals(self, other: "Position") -> bool:
         return self.x == other.x and self.y == other.y
+
+    @staticmethod
+    def is_in_list(positions: list["Position,..."], other: "Position") -> bool:
+
+        for position in positions:
+            if position.equals(other):
+                return True
+        return False
+
+    def is_next_to(self, other: "Position") -> bool:
+        subtracted = self.subtract(other)
+
+        if subtracted.x == 0 and subtracted.y == 0:
+            return False
+
+        if -1 <= subtracted.x <= 1 and -1 <= subtracted.y <= 1:
+            return True
+
+        return False
+
+    def get_direction_to_move(self, other: "Position") -> Direction:
+        subtracted = self.subtract(other)
+
+        if subtracted.y < 0:
+            if subtracted.x < 0:
+                return Direction.UP_RIGHT
+            if subtracted.x == 0:
+                return Direction.UP
+            if subtracted.x > 0:
+                return Direction.UP_LEFT
+        if subtracted.y == 0:
+            if subtracted.x < 0:
+                return Direction.RIGHT
+            if subtracted.x == 0:
+                return Direction.NONE
+            if subtracted.x > 0:
+                return Direction.LEFT
+
+        if subtracted.y > 0:
+            if subtracted.x < 0:
+                return Direction.DOWN_RIGHT
+            if subtracted.x == 0:
+                return Direction.DOWN
+            if subtracted.x > 0:
+                return Direction.DOWN_LEFT
+
+        return Direction.NONE
+
+    def __str__(self) -> str:
+        return f"{self.x}, {self.y}"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class Instruction:
@@ -47,14 +104,22 @@ class Instruction:
 class Rope:
     def __init__(self):
         self._position = Position(0, 0)
-        self._positions: list[Position, ...] = [self._position]
+        self._positions: list[Position, ...] = [Position(0, 0)]
 
-    def _add_position(self, position: Position) -> None:
-        if position not in self._positions:
-            self._positions.append(position)
+    def _add_position(self, ) -> None:
+        self._positions.append(Position(self._position.x, self._position.y))
 
-    def count_positions(self) -> int:
-        return len(self._positions)
+    def get_positions(self) -> list:
+        return self._positions
+
+    def get_single_positions(self) -> list:
+        to_return = list()
+
+        for position in self._positions:
+            if not Position.is_in_list(to_return, position):
+                to_return.append(position)
+
+        return to_return
 
     def move_instruction(self, instruction: Instruction) -> Position:
         return self.move_direction(instruction.get_direction())
@@ -71,8 +136,8 @@ class Rope:
                 self._position.x += 1
                 # no y
             case Direction.DOWN_RIGHT:
-                self._position.y += 1
-                self._position -= 1
+                self._position.x += 1
+                self._position.y -= 1
             case Direction.DOWN:
                 # no x
                 self._position.y -= 1
@@ -86,14 +151,32 @@ class Rope:
                 self._position.x -= 1
                 self._position.y += 1
 
-        self._add_position(self._position)
+        self._add_position()
 
         return self._position
 
     def move_position(self, position: Position) -> None:
+
         if self._position.equals(position):
-            self._add_position(position)
+            self._add_position()
             return
+
+        if self._position.is_next_to(position):
+            self._add_position()
+            return
+
+        direction = self._position.get_direction_to_move(position)
+        self.move_direction(direction)
+
+    def __str__(self) -> str:
+        to_print = ""
+        for entry in self._positions:
+            to_print += f"{entry} / "
+
+        return to_print
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 def parse(lines: list[str, ...]) -> list[Instruction, ...]:
@@ -116,8 +199,11 @@ def move_elements(instruction: list[Instruction, ...], head: Rope, tail: Rope) -
 
 
 def d_09_main() -> None:
-    with open("day_09/raw_input_09.txt", "r") as file:
+    with open("day_09/input_09_1.txt", "r") as file:
         lines = file.readlines()
+
         instruction = parse(lines)
-        print(instruction)
         head, tail = move_elements(instruction, Rope(), Rope())
+
+        print(f"head visited {len(head.get_single_positions())} once.")
+        print(f"tail visited {len(tail.get_single_positions())} once.")
