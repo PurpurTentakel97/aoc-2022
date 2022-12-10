@@ -155,18 +155,19 @@ class Rope:
 
         return self._position
 
-    def move_position(self, position: Position) -> None:
+    def move_position(self, position: Position) -> Position:
 
         if self._position.equals(position):
             self._add_position()
-            return
+            return self._position
 
         if self._position.is_next_to(position):
             self._add_position()
-            return
+            return self._position
 
         direction = self._position.get_direction_to_move(position)
         self.move_direction(direction)
+        return self._position
 
     def __str__(self) -> str:
         to_print = ""
@@ -189,21 +190,30 @@ def parse(lines: list[str, ...]) -> list[Instruction, ...]:
     return instruction
 
 
-def move_elements(instruction: list[Instruction, ...], head: Rope, tail: Rope) -> tuple[Rope, Rope]:
+def move_elements(instruction: list[Instruction, ...], count: int) -> list:
+    rope_elements: list = [Rope() for x in range(count)]
+
     for element in instruction:
         for i in range(element.get_size()):
-            new_pos = head.move_instruction(element)
-            tail.move_position(new_pos)
+            new_pos = rope_elements[0].move_instruction(element)
 
-    return head, tail
+            for index, rope in enumerate(rope_elements):
+                if index == 0:
+                    continue
+
+                new_pos = rope.move_position(new_pos)
+
+    return rope_elements
 
 
 def d_09_main() -> None:
-    with open("day_09/input_09_1.txt", "r") as file:
+    with open("day_09/input_09_2.txt", "r") as file:
         lines = file.readlines()
 
-        instruction = parse(lines)
-        head, tail = move_elements(instruction, Rope(), Rope())
+        rope_length: int = 10
 
-        print(f"head visited {len(head.get_single_positions())} once.")
-        print(f"tail visited {len(tail.get_single_positions())} once.")
+        instruction = parse(lines)
+        rope_elements = move_elements(instruction, rope_length)
+
+        print(f"head visited {len(rope_elements[0].get_single_positions())} once.")
+        print(f"tail visited {len(rope_elements[-1].get_single_positions())} once.")
