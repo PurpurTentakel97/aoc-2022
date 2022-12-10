@@ -54,10 +54,19 @@ def parse_instructions(lines: list[str, ...]) -> list[Instruction, ...]:
     return instructions
 
 
+def get_char_to_draw(cycle: int, value: int) -> str:
+    if (cycle - 1) % 40 in list(range(value - 1, value + 2)):
+        return "#"
+    else:
+        return "."
+
+
 def run_cycle(instructions: list[Instruction, ...]) -> list[int, ...]:
     cycle: int = 0
     value: int = 1
     signal_strength: list[int, ...] = list()
+    to_print = str()
+    line = str()
 
     for instruction in instructions:
         cycle += 1
@@ -65,18 +74,25 @@ def run_cycle(instructions: list[Instruction, ...]) -> list[int, ...]:
         if is_reasonable_cycle(cycle):
             signal_strength.append(calculate_single_signal_strength(cycle, value))
 
+        line += get_char_to_draw(cycle, value)
+        if len(line) % 40 == 0:
+            line += "\n"
+            to_print += line
+            line = ""
+
         match instruction.get_instruction():
             case InstructionType.NOOP:
                 continue
             case InstructionType.ADDX:
                 value += instruction.get_count()
 
+    print(to_print)
     return signal_strength
 
 
 def d_10_main() -> None:
     lines: list = list()
-    with open("day_10/input_10_1.txt", "r") as file:
+    with open("day_10/input_10_2.txt", "r") as file:
         lines = file.readlines()
 
     instructions = parse_instructions(lines)
