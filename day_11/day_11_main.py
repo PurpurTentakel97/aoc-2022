@@ -163,6 +163,5 @@ def d_11_main() -> None:
     monkeys = all_rounds(monkeys, 20)
     scores = get_scores_from_monkeys(monkeys)
     two_top_scores = get_top_highest_entries_from_list(scores, 2)
-    print(two_top_scores)
     result = get_multiplied_values_from_list(two_top_scores)
-    print(result)
+    print(f"the result is: {result}")
