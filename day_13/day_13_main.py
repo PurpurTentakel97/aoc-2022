@@ -4,6 +4,9 @@
 #
 
 from enum import Enum
+from typing import Union, List
+
+MyList = List[Union["MyList", int]]
 
 
 class Result(Enum):
@@ -12,7 +15,7 @@ class Result(Enum):
     NONE = 3
 
 
-def evaluate_single_signal(lhs: list, rhs: list) -> Result:
+def evaluate_single_signal(lhs: MyList, rhs: MyList) -> Result:
     for entry_lhs, entry_rhs in zip(lhs, rhs):
 
         if isinstance(entry_lhs, list) and isinstance(entry_rhs, list):
@@ -25,9 +28,9 @@ def evaluate_single_signal(lhs: list, rhs: list) -> Result:
             valid = evaluate_single_signal([entry_lhs], entry_rhs)
 
         else:
-            if lhs > rhs:
+            if entry_lhs < entry_rhs:
                 valid = Result.WRONG
-            elif lhs < rhs:
+            elif entry_lhs > entry_rhs:
                 valid = Result.RIGHT
             else:
                 valid = Result.NONE
@@ -43,7 +46,7 @@ def evaluate_single_signal(lhs: list, rhs: list) -> Result:
         return Result.NONE
 
 
-def evaluate_signal(signals: list) -> list[int, ...]:
+def evaluate_signal(signals: MyList) -> list[int]:
     to_return = list()
     i: int = 1
 
@@ -91,7 +94,7 @@ def parse_line(line: str) -> tuple[int, list]:
     return i, to_return
 
 
-def parse(lines: list[str, ...]) -> list:
+def parse(lines: list[str]) -> list:
     to_return = list()
 
     for line in lines:
@@ -108,7 +111,7 @@ def parse(lines: list[str, ...]) -> list:
 
 
 def d_13_main() -> None:
-    lines = list
+    lines: list[str] = list()
     with open("day_13/input_13_1.txt", "r") as file:
         lines = file.readlines()
 
