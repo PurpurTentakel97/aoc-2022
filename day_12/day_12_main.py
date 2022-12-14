@@ -24,6 +24,9 @@ class Field:
     def get_field_type(self) -> FieldType:
         return self._field_type
 
+    def set_field_type(self, field_type: FieldType) -> None:
+        self._field_type = field_type
+
     def get_height(self) -> int:
         return self._height
 
@@ -128,6 +131,17 @@ class Map:
     def _is_valid_way(parent: Field, child: Field) -> bool:
         return parent.get_height() >= child.get_height() - 1
 
+    def set_new_starting_field(self, coordinates: tuple[int, int]) -> None:
+
+        assert (0 <= coordinates[0] <= self.get_height() - 1)
+        assert (0 <= coordinates[1] <= self.get_length() - 1)
+
+        self._fields[self._start_coordinates[0]][self._start_coordinates[1]].set_field_type(FieldType.NORMAL)
+
+        self._start_coordinates = coordinates
+
+        self._fields[self._start_coordinates[0]][self._start_coordinates[1]].set_field_type(FieldType.START)
+
     def get_height(self) -> int:
         return len(self._fields)
 
@@ -224,13 +238,50 @@ def print_fields(fields) -> None:
         print(line)
 
 
+def get_fewest_steps(map_: Map) -> int:
+    fewest_steps: int = sys.maxsize
+
+    print("[calculating...]")
+
+    max_ways = map_.get_height() * map_.get_length()
+
+    for line, _ in enumerate(map_.get_fields_copy()):
+        for row, field in enumerate(_):
+
+            percent = (line * map_.get_length() + row + 1) / max_ways * 100
+            print("%.2f" % percent)
+
+            if field.get_height() > 1:
+                continue
+
+            current_map = copy.deepcopy(map_)
+
+            current_map.set_new_starting_field((line, row))
+            if current_map.calculate_shortest_way():
+                steps: int = current_map.get_finish_field().get_costs()
+
+                if steps < fewest_steps:
+                    fewest_steps = steps
+
+    print("[finished]")
+
+    return fewest_steps
+
+
 def d_12_main() -> None:
     lines: list[str, ...] = list()
-    with open("day_12/input_12_1.txt", "r") as file:
+    with open("day_12/input_12_2.txt", "r") as file:
         lines = file.readlines()
 
+    # 1
     map_ = Map(parse(lines))
     success: bool = map_.calculate_shortest_way()
 
-    print(f"The war is valid: {success}")
+    print(f"The way is valid: {success}")
     print(f"the shortest way is: {map_.get_finish_field().get_costs()}")
+
+    print("---")
+
+    # 2
+    fewest_steps: int = get_fewest_steps(Map(parse(lines)))
+    print(f"the fewest staps are: {fewest_steps}")
