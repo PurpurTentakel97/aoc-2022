@@ -93,7 +93,6 @@ def is_divider(signal: MyList, to_search: list[int]) -> bool:
         if isinstance(signal[0], list) and len(signal[0]) == 1:
             if isinstance(signal[0][0], int):
                 if signal[0][0] in to_search:
-                    print(signal)
                     return True
     return False
 
@@ -181,9 +180,6 @@ def d_13_main() -> None:
     # 2
     input_ = parse(lines)
     sort: MyList = sort_signals(input_)
-    for _ in sort:
-        print(_)
-    IDs: list[int] = get_divider_IDs(sort, [2,6])
-    print(IDs)
+    IDs: list[int] = get_divider_IDs(sort, [2, 6])
     result: int = multiply(IDs)  # type: ignore
     print(f"the result #2 is: {result}")
