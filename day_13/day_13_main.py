@@ -2,7 +2,7 @@
 # Purpur Tentakel
 # 05.12.2022
 #
-
+import copy
 from enum import Enum
 from typing import Union, List
 
@@ -22,26 +22,30 @@ def evaluate_single_signal(lhs: MyList, rhs: MyList) -> Result:
             valid = evaluate_single_signal(entry_lhs, entry_rhs)
 
         elif isinstance(entry_lhs, list) and isinstance(entry_rhs, int):
-            valid = evaluate_single_signal(entry_lhs, [entry_rhs])
+            valid = evaluate_single_signal(entry_lhs, [copy.copy(entry_rhs)])
 
         elif isinstance(entry_lhs, int) and isinstance(entry_rhs, list):
-            valid = evaluate_single_signal([entry_lhs], entry_rhs)
+            valid = evaluate_single_signal([copy.copy(entry_lhs)], entry_rhs)
 
         else:
+            assert (isinstance(entry_lhs, int))
+            assert (isinstance(entry_rhs, int))
             if entry_lhs < entry_rhs:
-                valid = Result.WRONG
-            elif entry_lhs > entry_rhs:
                 valid = Result.RIGHT
+            elif entry_lhs > entry_rhs:
+                valid = Result.WRONG
             else:
                 valid = Result.NONE
 
         if valid != Result.NONE:
             return valid
 
-    if len(lhs) > len(rhs):
-        return Result.WRONG
-    elif len(lhs) < len(rhs):
+    assert (isinstance(lhs, list))
+    assert (isinstance(rhs, list))
+    if len(lhs) < len(rhs):
         return Result.RIGHT
+    elif len(lhs) > len(rhs):
+        return Result.WRONG
     else:
         return Result.NONE
 
@@ -56,6 +60,8 @@ def evaluate_signal(signals: MyList) -> list[int]:
 
         lhs = signals[i - 1]
         rhs = signals[i]
+        assert isinstance(lhs, list)
+        assert isinstance(rhs, list)
 
         if evaluate_single_signal(lhs, rhs) == Result.RIGHT:
             to_return.append(int((i - 1) / 2 + 1))
@@ -65,16 +71,67 @@ def evaluate_signal(signals: MyList) -> list[int]:
     return to_return
 
 
-def parse_line(line: str) -> tuple[int, list]:
-    # [1,[2,[3,[4,[5,6,7]]]],8,9]
+def sort_signals(signals: MyList) -> MyList:
+    n = len(signals)
+    swapped = False
 
-    to_return = list()
+    for i in range(n - 1):
+        for j in range(0, n - i - 1):
+
+            if evaluate_single_signal(signals[j], signals[j + 1]) == Result.WRONG:  # type: ignore
+                swapped = True
+                signals[j], signals[j + 1] = signals[j + 1], signals[j]
+
+        if not swapped:
+            return signals
+
+    return signals
+
+
+def is_divider(signal: MyList, to_search: list[int]) -> bool:
+    if isinstance(signal, list) and len(signal) == 1:
+        if isinstance(signal[0], list) and len(signal[0]) == 1:
+            if isinstance(signal[0][0], int):
+                if signal[0][0] in to_search:
+                    print(signal)
+                    return True
+    return False
+
+
+def get_divider_IDs(signals: MyList, to_search: list[int]) -> list[int]:
+    IDs: list[int] = list()
+
+    for i, signal in enumerate(signals):
+        if is_divider(signal, to_search):  # type: ignore
+            IDs.append(i + 1)
+
+    return IDs
+
+
+def multiply(IDs: list[int]) -> int:
+    if len(IDs) == 0:
+        return 0
+
+    value = IDs[0]
+
+    for i in range(1, len(IDs)):
+        value *= IDs[i]
+
+    return value
+
+
+def parse_line(line: str) -> tuple[int, MyList]:
+    to_return: MyList = list()
     i = 1
 
-    char: str = str()
+    current_string = ""
     while True:
 
-        char = line[i]
+        char: str = line[i]
+
+        if not char.isdigit() and len(current_string) > 0:
+            to_return.append(int(current_string))
+            current_string = ""
 
         if char == '[':
             min_index, entries = parse_line(line[i:])
@@ -87,15 +144,15 @@ def parse_line(line: str) -> tuple[int, list]:
             break
 
         if char.isdigit():
-            to_return.append(int(char))
+            current_string += char
 
         i += 1
 
     return i, to_return
 
 
-def parse(lines: list[str]) -> list:
-    to_return = list()
+def parse(lines: list[str]) -> MyList:
+    to_return: MyList = list()
 
     for line in lines:
         line = line.rstrip()
@@ -111,13 +168,22 @@ def parse(lines: list[str]) -> list:
 
 
 def d_13_main() -> None:
-    lines: list[str] = list()
-    with open("day_13/input_13_1.txt", "r") as file:
+    lines: list[str]
+    with open("day_13/input_13_2.txt", "r") as file:
         lines = file.readlines()
 
     input_ = parse(lines)
 
     # 1
-    result = evaluate_signal(input_)
-    print(result)
-    print(f"the result is: {sum(result)}")
+    result: list[int] = evaluate_signal(input_)
+    print(f"the result #1 is: {sum(result)}")
+
+    # 2
+    input_ = parse(lines)
+    sort: MyList = sort_signals(input_)
+    for _ in sort:
+        print(_)
+    IDs: list[int] = get_divider_IDs(sort, [2,6])
+    print(IDs)
+    result: int = multiply(IDs)  # type: ignore
+    print(f"the result #2 is: {result}")
