@@ -2,6 +2,7 @@
 # Purpur Tentakel
 # 05.12.2022
 #
+import copy
 import sys
 from enum import Enum
 
@@ -31,6 +32,7 @@ class Direction(Enum):
     DOWN_LEFT = 2
     DOWN_RIGHT = 3
     NONE = 4
+    START_NONE = 5
 
 
 class Field:
@@ -83,8 +85,14 @@ class Cave:
         self._edge_values[0].y = min(self._start_sand_coordinate.y, self._edge_values[0].y)
         self._edge_values[1].y = min(self._start_sand_coordinate.y, self._edge_values[1].y)
 
-        self._edge_values[2].y += 2
-        self._edge_values[3].y += 2
+        self._edge_values[0].y -= 1
+        self._edge_values[1].y -= 1
+
+        self._edge_values[2].y += 1
+        self._edge_values[3].y += 1
+
+        self._edge_values[0].x -= 1
+        self._edge_values[2].x -= 1
 
         self._edge_values[1].x += 2
         self._edge_values[3].x += 2
@@ -93,17 +101,17 @@ class Cave:
 
         self._fields.clear()
 
-        for i in range(self._edge_values[0].y - 1, self._edge_values[2].y):
+        for i in range(self._edge_values[0].y, self._edge_values[2].y + 1):
             single_fields: list[Field] = list()
 
-            for j in range(self._edge_values[0].x - 1, self._edge_values[1].x):
+            for j in range(self._edge_values[0].x, self._edge_values[1].x + 1):
                 single_fields.append(Field(FieldType.NORMAL, Coordinate(j, i)))
 
             self._fields.append(single_fields)
 
-        next_line: int = self._edge_values[3].y
+        next_line: int = self._edge_values[3].y + 1
         last_single_fields: list[Field] = list()
-        for j in range(self._edge_values[0].x - 1, self._edge_values[1].x):
+        for j in range(self._edge_values[0].x, self._edge_values[1].x):
             last_single_fields.append(Field(FieldType.FLOOR, Coordinate(j, next_line)))
 
         self._fields.append(last_single_fields)
@@ -144,6 +152,41 @@ class Cave:
         index: tuple[int, int] = self._get_index_from_coordinate(self._start_sand_coordinate)
         self._fields[index[1]][index[0]].set_field_type(FieldType.START)
 
+    def _check_and_update_cave_width(self, current_coordinates: Coordinate) -> None:
+
+        extend_left: bool = self._edge_values[0].x == current_coordinates.x
+        extend_right: bool = self._edge_values[1].x == current_coordinates.x
+
+        if extend_left or extend_right:
+
+            for i, line in enumerate(self._fields):
+                field: Field = Field(FieldType.NORMAL, Coordinate(0, 0))
+                if extend_left:
+                    if i == len(self._fields) - 1:
+                        field = Field(FieldType.FLOOR,
+                                      Coordinate(current_coordinates.x - 1, line[0].get_coordinates().y))
+                    else:
+                        field = Field(FieldType.NORMAL,
+                                      Coordinate(current_coordinates.x - 1, line[0].get_coordinates().y))
+
+                    self._edge_values[0].x = field.get_coordinates().x
+                    self._edge_values[2].x = field.get_coordinates().x
+
+                    line.insert(0, field)
+
+                elif extend_right:
+                    if i == len(self._fields) - 1:
+                        field = Field(FieldType.FLOOR,
+                                      Coordinate(current_coordinates.x + 1, line[0].get_coordinates().y))
+                    else:
+                        field = Field(FieldType.NORMAL,
+                                      Coordinate(current_coordinates.x + 1, line[0].get_coordinates().y))
+
+                    self._edge_values[1].x = field.get_coordinates().x
+                    self._edge_values[3].x = field.get_coordinates().x
+
+                    line.append(field)
+
     def _get_index_from_coordinate(self, coordinate: Coordinate) -> tuple[int, int]:
 
         assert len(self._fields) > 0
@@ -167,7 +210,10 @@ class Cave:
         elif self._fields[index[1] + 1][index[0] + 1].get_field_type() in [FieldType.NORMAL, FieldType.FLOOR]:
             return Direction.DOWN_RIGHT
 
-        return Direction.NONE
+        if self._fields[index[1]][index[0]].get_field_type() == FieldType.START:
+            return Direction.START_NONE
+        else:
+            return Direction.NONE
 
     def _get_next_field(self, coordinates: Coordinate, direction: Direction) -> Field:
 
@@ -183,20 +229,28 @@ class Cave:
             case _:
                 raise IndexError()
 
-    def start_sand(self) -> bool:
+    def start_sand(self, end_by_ground: bool = True) -> bool:
 
         current_coordinates: Coordinate = self._start_sand_coordinate
 
         while True:
+            self._check_and_update_cave_width(current_coordinates)
             next_direction: Direction = self._get_next_direction(current_coordinates)
             if next_direction == Direction.NONE:
                 self._rounds += 1
                 return True
+            if next_direction == Direction.START_NONE:
+                self._rounds += 1
+                return False
 
             next_field: Field = self._get_next_field(current_coordinates, next_direction)
 
             if next_field.get_field_type() == FieldType.FLOOR:
-                return False
+                if end_by_ground:
+                    return False
+                else:
+                    self._rounds += 1
+                    return True
 
             assert next_field.get_field_type() == FieldType.NORMAL
             current_index: tuple[int, int] = self._get_index_from_coordinate(current_coordinates)
@@ -256,19 +310,28 @@ def parse(lines: list[str]) -> tuple[tuple[Coordinate, ...], ...]:
 
 def d_14_main() -> None:
     lines: list[str]
-    with open("day_14/raw_input_14.txt", "r") as file:
+    with open("day_14/input_14_2.txt", "r") as file:
         lines = file.readlines()
 
     coordinates: tuple[tuple[Coordinate, ...], ...] = parse(lines)
     edge_values: tuple[Coordinate, ...] = get_edge_values(coordinates)
 
-    cave: Cave = Cave(edge_values, coordinates, Coordinate(500, 0))
-
+    # 1
+    cave_1: Cave = Cave(copy.deepcopy(edge_values), copy.deepcopy(coordinates), Coordinate(500, 0))
     while True:
-        print(f"sand: {cave.get_rounds()}")
-
-        if not cave.start_sand():
+        print(f"sand: {cave_1.get_rounds()}")
+        # cave_1.print()
+        if not cave_1.start_sand():
             break
+    cave_1.print()
+    print(f"the cave_1 is full after {cave_1.get_rounds()} rounds.\n")
 
-    cave.print()
-    print(f"the cave is full after {cave.get_rounds()} rounds.\n")
+    # 2
+    cave_2: Cave = Cave(copy.deepcopy(edge_values), copy.deepcopy(coordinates), Coordinate(500, 0))
+    while True:
+        print(f"sand: {cave_2.get_rounds()}")
+        # cave_2.print()
+        if not cave_2.start_sand(False):
+            break
+    cave_2.print()
+    print(f"the cave_2 is full after {cave_2.get_rounds()} rounds.\n")
