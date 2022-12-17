@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 print("\nday:" + str(day) + " \"Regolith Reservoir\"\n")
                 d.d_14.d_14_main()
             case 15:
-                print("\nday:" + str(day) + "\n")
+                print("\nday:" + str(day) + " \"Beacon Exclusion Zone\"\n")
                 d.d_15.d_15_main()
             case 16:
                 print("\nday:" + str(day) + "\n")
